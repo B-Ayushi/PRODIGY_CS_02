@@ -1,0 +1,58 @@
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.util.Scanner;
+
+public class ImageEncryptionTool {
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Enter the image path:");
+        String path = scanner.nextLine();
+        System.out.println("Enter the key for encryption/decryption:");
+        int key = scanner.nextInt();
+
+        try {
+            File inputFile = new File(path);
+            BufferedImage image = ImageIO.read(inputFile);
+
+            // Encrypt or decrypt the image
+            BufferedImage processedImage = processImage(image, key);
+
+            // Save the processed image
+            File outputFile = new File("encrypted_" + inputFile.getName());
+            ImageIO.write(processedImage, "png", outputFile);
+            System.out.println("The processed image is saved as: " + outputFile.getName());
+
+        } catch (IOException e) {
+            System.out.println("Error processing the image.");
+            e.printStackTrace();
+        }
+    }
+
+    private static BufferedImage processImage(BufferedImage image, int key) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                int pixel = image.getRGB(j, i);
+                int alpha = (pixel >> 24) & 0xff;
+                int red = (pixel >> 16) & 0xff;
+                int green = (pixel >> 8) & 0xff;
+                int blue = pixel & 0xff;
+
+                // Perform the operation on each channel
+                red = (red + key) % 256;
+                green = (green + key) % 256;
+                blue = (blue + key) % 256;
+
+                // Set the pixel with the modified values
+                pixel = (alpha << 24) | (red << 16) | (green << 8) | blue;
+                image.setRGB(j, i, pixel);
+            }
+        }
+        return image;
+    }
+}
